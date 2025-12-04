@@ -17,5 +17,11 @@
   </dependencies>
   <build>
     <finalName>hola-mundo</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.2</version>
+      </plugin>
+    </plugins>
   </build>
 </project>
