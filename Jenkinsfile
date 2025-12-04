@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'MAVEN_HOME'
+        jdk 'JDK_HOME'
+    }
+
     environment {
-        MAVEN_HOME = tool 'MAVEN_HOME'
         SONAR = 'SonarLocal'
         TOMCAT_USER = "admin"
         TOMCAT_PASS = "admin"
@@ -12,20 +16,20 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/DiegoAM13/PYG.git'
+                git branch: 'main', url: 'https://github.com/DiegoAM13/PYG.git'
             }
         }
 
         stage('Build Maven') {
             steps {
-                bat '"%MAVEN_HOME%/bin/mvn" clean package'
+                bat "mvn clean package"
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv(SONAR) {
-                    bat '"%MAVEN_HOME%/bin/mvn" sonar:sonar'
+                    bat "mvn sonar:sonar"
                 }
             }
         }
@@ -40,7 +44,9 @@ pipeline {
 
         stage('Deploy to Test') {
             steps {
-                deployToTomcat("test")
+                script {
+                    deployToTomcat("test")
+                }
             }
         }
 
@@ -49,7 +55,9 @@ pipeline {
                 branch 'main'
             }
             steps {
-                deployToTomcat("prod")
+                script {
+                    deployToTomcat("prod")
+                }
             }
         }
     }
@@ -74,6 +82,8 @@ pipeline {
 
 def deployToTomcat(envName) {
     bat """
-    curl -u ${env.TOMCAT_USER}:${env.TOMCAT_PASS} -T target/*.war "${env.TOMCAT_URL}/manager/text/deploy?path=/${envName}&update=true"
+    curl -u %TOMCAT_USER%:%TOMCAT_PASS% ^
+     -T target/*.war ^
+     "%TOMCAT_URL%/manager/text/deploy?path=/${envName}&update=true"
     """
 }
