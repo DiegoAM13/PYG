@@ -47,7 +47,7 @@ pipeline {
             steps {
                 timeout(time: 3, unit: 'MINUTES') {
                     script {
-                        def gate = waitForQualityGate abortPipeline: false
+                        def gate = waitForQualityGate abortPipeline: true
 
                         if (gate.status != 'OK') {
                             echo "⚠️ Sonar: Código malo"
