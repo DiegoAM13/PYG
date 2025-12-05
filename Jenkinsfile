@@ -96,8 +96,11 @@ pipeline {
 
 def deployToTomcat(envName) {
     bat """
-    for %%f in (target\\*.war) do curl -u %TOMCAT_USER%:%TOMCAT_PASS% ^
-     -T target\\%%f ^
-     "%TOMCAT_URL%/manager/text/deploy?path=/${envName}&update=true"
+    for %%f in (target\\*.war) do (
+        echo Deploying: %%f
+        curl -u %TOMCAT_USER%:%TOMCAT_PASS% ^
+         -T %%f ^
+         "%TOMCAT_URL%/manager/text/deploy?path=/${envName}&update=true"
+    )
     """
 }
