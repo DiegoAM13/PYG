@@ -6,11 +6,12 @@ pipeline {
         jdk 'JDK_HOME'
     }
 
-    environment {
+   environment {
         SONAR = 'SonarLocal'
         TOMCAT_USER = "admin"
         TOMCAT_PASS = "admin"
         TOMCAT_URL = "http://localhost:8080"
+        EMAIL = "diegoalejandromejiagiraldo5@gmail.com"
     }
 
     stages {
@@ -20,9 +21,17 @@ pipeline {
             }
         }
 
-        stage('Build Maven') {
+        stage('Build & Test') {
             steps {
                 bat "mvn clean package"
+            }
+        }
+
+        stage('Deploy to Test') {
+            steps {
+                script {
+                    deployToTomcat("test")
+                }
             }
         }
 
@@ -36,24 +45,29 @@ pipeline {
 
         stage('Quality Gate') {
             steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                timeout(time: 3, unit: 'MINUTES') {
+                    script {
+                        def gate = waitForQualityGate abortPipeline: false
+
+                        if (gate.status != 'OK') {
+                            echo "⚠️ Sonar: Código malo"
+                            emailext(
+                                subject: "❌ Código Rechazado por Sonar",
+                                body: "Sonar ha detectado problemas. No se hará deploy a producción.",
+                                to: EMAIL
+                            )
+                            error "SonarQube no aprobó el código"
+                        } else {
+                            echo "✔ Código OK, se continúa"
+                        }
+                    }
                 }
             }
         }
 
-        stage('Deploy to Test') {
-            steps {
-                script {
-                    deployToTomcat("test")
-                }
-            }
-        }
+        
 
-        stage('Deploy to Prod') {
-            when {
-                branch 'main'
-            }
+       stage('Deploy to Production') {
             steps {
                 script {
                     deployToTomcat("prod")
@@ -67,14 +81,14 @@ pipeline {
             emailext(
                 subject: "✔ Deploy Exitoso",
                 body: "El deploy en Producción fue exitoso",
-                to: "diegoalejandromejiagiraldo5@gmail.com"
+                to: EMAIL
             )
         }
         failure {
             emailext(
                 subject: "❌ Deploy Falló",
                 body: "El pipeline falló. Revisa Sonar o el Build",
-                to: "diegoalejandromejiagiraldo5@gmail.com"
+                to: EMAIL
             )
         }
     }
