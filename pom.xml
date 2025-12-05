@@ -17,5 +17,15 @@
   </dependencies>
   <build>
     <finalName>hola-mundo</finalName>
+    
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>4.0.0.4121</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 </project>
