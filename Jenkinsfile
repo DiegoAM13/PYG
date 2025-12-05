@@ -11,7 +11,7 @@ pipeline {
         TOMCAT_USER = "admin"
         TOMCAT_PASS = "admin"
         TOMCAT_URL = "http://localhost:8080"
-        EMAIL = "diegoalejandromejiagiraldo5@gmail.com"
+        EMAIL = "melachupatodoeldia@gmail.com"
     }
 
     stages {
